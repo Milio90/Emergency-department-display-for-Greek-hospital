@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+bin/
+lib/
+lib64/
+include/
+pyvenv.cfg
+pip-selfcheck.json
+
+# Data Cache Files (generated at runtime)
+hospitals_on_duty.json
+shifts_cache.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+
+# User-provided shift schedules (may contain sensitive data)
+# Uncomment if you want to exclude DOCX files:
+# *.docx
+
+# PDF files (scraped from MOH, regenerated)
+*.pdf
