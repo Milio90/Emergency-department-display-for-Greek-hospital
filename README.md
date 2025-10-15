@@ -15,6 +15,18 @@ A Python program that displays on-duty hospitals in Athens, Greece for different
 
 ## Installation
 
+### Option 1: Windows Executable (Recommended for End Users)
+
+Download the pre-built Windows executable:
+
+1. Go to the [Releases](../../releases) page or [Actions](../../actions) tab
+2. Download `HospitalOnDutyDisplay.exe`
+3. Run the executable - no Python installation required!
+
+The executable is a standalone application that includes all dependencies.
+
+### Option 2: Python Installation (For Development)
+
 1. Install Python dependencies:
 
 ```bash
@@ -153,10 +165,16 @@ Hospital(
 
 ## Files
 
-- `athens_hospitals.py` - Main program with display and scheduling
+- `cardiology_display.py` - Main GUI application
+- `athens_hospitals.py` - CLI program with display and scheduling
 - `moh_scraper.py` - Ministry of Health PDF scraper module
+- `shift_parser.py` - Doctor shift schedule parser
 - `requirements.txt` - Python dependencies
+- `cardiology_display.spec` - PyInstaller build configuration
+- `build_windows.bat` - Windows build script
 - `hospitals_on_duty.json` - Generated data file (created after first run)
+- `shifts_cache.json` - Cached shift schedules
+- `BUILD.md` - Detailed build instructions
 - `README.md` - This file
 
 ## Project Structure
@@ -227,14 +245,40 @@ If the program shows the wrong day's schedule:
 
 This program is provided as-is for educational and practical use.
 
+## Building Windows Executable
+
+To build the Windows executable yourself:
+
+### Quick Build (Windows)
+
+```cmd
+build_windows.bat
+```
+
+### Manual Build
+
+```cmd
+pip install -r requirements.txt
+pyinstaller cardiology_display.spec
+```
+
+The executable will be created in the `dist/` folder.
+
+For detailed instructions, see [BUILD.md](BUILD.md).
+
+### Automated Builds
+
+This project uses GitHub Actions to automatically build Windows executables on every push. Check the [Actions](../../actions) tab to download the latest build.
+
 ## Contributing
 
 To improve this program:
 1. Add official government API integration
 2. Implement better error handling
-3. Add GUI interface
+3. ✅ GUI interface - **Completed!**
 4. Support more cities beyond Athens
 5. Add notifications system
+6. ✅ Windows executable distribution - **Completed!**
 
 ## Notes
 

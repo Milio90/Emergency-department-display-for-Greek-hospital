@@ -8,6 +8,10 @@ __pycache__/
 dist/
 build/
 *.egg
+*.spec.bak
+
+# PyInstaller
+*.spec~
 
 # Virtual Environment
 bin/
