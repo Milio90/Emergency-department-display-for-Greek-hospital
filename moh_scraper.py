@@ -40,6 +40,7 @@ class MOHHospitalScraper:
         "ΑΓ. ΑΝΑΡΓΥΡΟΙ": "Γενικό Οικουμενικό Νοσοκομείο Κρατικό «Άγιοι Ανάργυροι»",
         "ΣΙΣΜΑΝΟΓΛΕΙΟ": "Γενικό Νοσοκομείο Αθηνών «Σισμανόγλειο»",
         "ΠΑΜΜΑΚΑΡΙΣΤΟΣ": "Γενικό Νοσοκομείο Αθηνών «Παμμακάριστος»",
+        "ΠΑΜΜΑΚΑΡΙΣΤΟ": "Γενικό Νοσοκομείο Αθηνών «Παμμακάριστος»",  # Alternative spelling
         "ΑΤΤΙΚΟΝ": "Πανεπιστημιακό Γενικό Νοσοκομείο «Αττικόν»",
         "ΚΑΤ": "Γενικό Νοσοκομείο Αθηνών «ΚΑΤ»",
         "ΑΣΚΛΗΠΙΕΙΟ": "Γενικό Νοσοκομείο «Ασκληπιείο» Βούλας",
@@ -58,6 +59,7 @@ class MOHHospitalScraper:
         "ΑΓ. ΣΑΒΒΑΣ": "Αντικαρκινικό-Ογκολογικό Νοσοκομείο Αθηνών «Άγιος Σάββας»",
         "Γ. ΓΕΝΝΗΜΑΤΑΣ": "Γενικό Νοσοκομείο Αθηνών «Γεώργιος Γεννηματάς»",
         "ΚΟΡΓ. ΜΠΕΝ. ΕΕΣ": "Γενικό Νοσοκομείο Αθηνών «Κοργιαλένειο-Μπενάκειο Ε.Ε.Σ.»",
+        "ΑΓ. ΠΑΝΤΕΛΕΗΜΩΝ": "Νοσοκομείο «Άγιος Παντελεήμων»",
     }
 
     # Specialty name normalization
@@ -245,28 +247,47 @@ class MOHHospitalScraper:
         if not text or text.strip() == "":
             return []
 
-        # Split by newlines and common separators
-        lines = re.split(r'\n|Γ\.Ν\.', text)
         hospital_names = []
+
+        # Remove time annotations like "έως 23:00", "έως 20:00", etc.
+        text = re.sub(r'έως\s+\d{2}:\d{2}', '', text)
+        text = text.strip()
+
+        # Split only by newlines (keep Γ.Ν. intact)
+        lines = text.split('\n')
 
         for line in lines:
             line = line.strip()
             if not line:
                 continue
 
-            # Prepend Γ.Ν. if it was split
-            if not line.startswith('Γ.') and not line.startswith('Π.') and not line.startswith('Ν.'):
-                line = 'Γ.Ν.' + line
+            # Skip generic prefixes that don't specify a hospital
+            # "Γ.Ν.Α." alone means "General Hospital of Athens" but doesn't specify which one
+            if line in ['Γ.Ν.Α.', 'Γ.Ν.Ν.', 'Γ.Ο.Ν.Κ.', 'Π.Γ.Ν.']:
+                continue
 
-            # Check if this contains a known hospital abbreviation
+            # Skip area names that are just location indicators
+            # These are in all caps and don't contain hospital name patterns
+            # "ΠΕΙΡΑΙΑΣ" is a region indicator, not a hospital name
+            if line in ['ΠΕΙΡΑΙΑΣ', 'ΑΘΗΝΑ', 'ΠΕΡΙΣΤΕΡΙ']:
+                continue
+
+            # Check if this line contains a known hospital abbreviation
+            matched = False
             for abbr, full_name in self.HOSPITAL_NAMES.items():
                 if abbr in line:
                     hospital_names.append(full_name)
+                    matched = True
                     break
-            else:
-                # If no match, use the text as-is (cleaned)
-                if 'Γ.Ν.' in line or 'Π.Γ.Ν.' in line or 'Ν.' in line:
-                    hospital_names.append(line)
+
+            if not matched:
+                # If no match found but contains hospital prefixes, use cleaned text
+                # But make sure it has more than just the prefix
+                if any(prefix in line for prefix in ['Γ.Ν.', 'Π.Γ.Ν.', 'Ν.', 'Γ.Ο.Ν.Κ.']):
+                    # Make sure there's actual content beyond the prefix and punctuation
+                    cleaned = re.sub(r'^[ΓΠΝ\.Ο\.Κ\s]+', '', line)
+                    if cleaned and len(cleaned) > 3:
+                        hospital_names.append(line)
 
         return hospital_names
 
