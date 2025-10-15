@@ -37,8 +37,10 @@ shifts_cache.json
 *.bak
 
 # User-provided shift schedules (may contain sensitive data)
-# Uncomment if you want to exclude DOCX files:
-# *.docx
+*.docx
+
+# Project-specific documentation (local only)
+CLAUDE.md
 
 # PDF files (scraped from MOH, regenerated)
 *.pdf
