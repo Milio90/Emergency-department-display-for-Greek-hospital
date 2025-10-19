@@ -77,9 +77,8 @@ class HospitalDisplayGUI:
         # Initial data fetch
         self.refresh_data()
 
-        # Auto-refresh every 30 minutes (1800000 ms)
-        self.auto_refresh_interval = 1800000
-        self.schedule_refresh()
+        # Schedule daily refresh at 08:00
+        self.schedule_daily_refresh()
 
     def create_ui(self):
         """Create the user interface"""
@@ -889,6 +888,72 @@ class HospitalDisplayGUI:
                 anchor="w"
             ).grid(row=row, column=1, sticky="w", padx=10, pady=3)
 
+            row += 1
+
+        # Anesthesiologist 1
+        if self.current_shift.anesthesiologist_1:
+            tk.Label(
+                grid_frame,
+                text="Αναισθησιολόγος 1:",
+                font=label_font,
+                bg=self.card_color,
+                fg=self.text_color,
+                anchor="w"
+            ).grid(row=row, column=0, sticky="w", padx=10, pady=3)
+
+            tk.Label(
+                grid_frame,
+                text=self.current_shift.anesthesiologist_1,
+                font=value_font,
+                bg=self.card_color,
+                fg=self.text_color,
+                anchor="w"
+            ).grid(row=row, column=1, sticky="w", padx=10, pady=3)
+
+            row += 1
+
+        # Anesthesiologist 2
+        if self.current_shift.anesthesiologist_2:
+            tk.Label(
+                grid_frame,
+                text="Αναισθησιολόγος 2:",
+                font=label_font,
+                bg=self.card_color,
+                fg=self.text_color,
+                anchor="w"
+            ).grid(row=row, column=0, sticky="w", padx=10, pady=3)
+
+            tk.Label(
+                grid_frame,
+                text=self.current_shift.anesthesiologist_2,
+                font=value_font,
+                bg=self.card_color,
+                fg=self.text_color,
+                anchor="w"
+            ).grid(row=row, column=1, sticky="w", padx=10, pady=3)
+
+            row += 1
+
+        # Pediatric Cardiologist
+        if self.current_shift.pediatric_cardiologist:
+            tk.Label(
+                grid_frame,
+                text="Παιδοκαρδιολόγος:",
+                font=label_font,
+                bg=self.card_color,
+                fg=self.text_color,
+                anchor="w"
+            ).grid(row=row, column=0, sticky="w", padx=10, pady=3)
+
+            tk.Label(
+                grid_frame,
+                text=self.current_shift.pediatric_cardiologist,
+                font=value_font,
+                bg=self.card_color,
+                fg=self.text_color,
+                anchor="w"
+            ).grid(row=row, column=1, sticky="w", padx=10, pady=3)
+
     def previous_day(self):
         """Navigate to previous day"""
         self.selected_date = self.selected_date - timedelta(days=1)
@@ -1026,7 +1091,7 @@ class HospitalDisplayGUI:
         # Create edit dialog
         dialog = tk.Toplevel(self.root)
         dialog.title("Επεξεργασία Εφημεριών")
-        dialog.geometry("500x450")
+        dialog.geometry("500x600")
         dialog.configure(bg=self.bg_color)
 
         # Make dialog modal
@@ -1152,6 +1217,57 @@ class HospitalDisplayGUI:
         )
         junior_surgeon_entry.grid(row=5, column=1, sticky="ew", pady=5, padx=(10, 0))
 
+        # Anesthesiologist 1
+        tk.Label(
+            form_frame,
+            text="Αναισθησιολόγος 1:",
+            font=label_font,
+            bg=self.bg_color
+        ).grid(row=6, column=0, sticky="w", pady=5)
+
+        anesthesiologist_1_var = tk.StringVar(value=self.current_shift.anesthesiologist_1 or "")
+        anesthesiologist_1_entry = tk.Entry(
+            form_frame,
+            textvariable=anesthesiologist_1_var,
+            font=entry_font,
+            width=40
+        )
+        anesthesiologist_1_entry.grid(row=6, column=1, sticky="ew", pady=5, padx=(10, 0))
+
+        # Anesthesiologist 2
+        tk.Label(
+            form_frame,
+            text="Αναισθησιολόγος 2:",
+            font=label_font,
+            bg=self.bg_color
+        ).grid(row=7, column=0, sticky="w", pady=5)
+
+        anesthesiologist_2_var = tk.StringVar(value=self.current_shift.anesthesiologist_2 or "")
+        anesthesiologist_2_entry = tk.Entry(
+            form_frame,
+            textvariable=anesthesiologist_2_var,
+            font=entry_font,
+            width=40
+        )
+        anesthesiologist_2_entry.grid(row=7, column=1, sticky="ew", pady=5, padx=(10, 0))
+
+        # Pediatric Cardiologist
+        tk.Label(
+            form_frame,
+            text="Παιδοκαρδιολόγος:",
+            font=label_font,
+            bg=self.bg_color
+        ).grid(row=8, column=0, sticky="w", pady=5)
+
+        pediatric_cardiologist_var = tk.StringVar(value=self.current_shift.pediatric_cardiologist or "")
+        pediatric_cardiologist_entry = tk.Entry(
+            form_frame,
+            textvariable=pediatric_cardiologist_var,
+            font=entry_font,
+            width=40
+        )
+        pediatric_cardiologist_entry.grid(row=8, column=1, sticky="ew", pady=5, padx=(10, 0))
+
         form_frame.columnconfigure(1, weight=1)
 
         # Buttons
@@ -1167,6 +1283,9 @@ class HospitalDisplayGUI:
             self.shift_parser.update_shift(self.selected_date.day, 'tep_cardiologist', tep_var.get())
             self.shift_parser.update_shift(self.selected_date.day, 'senior_cardiac_surgeon', senior_surgeon_var.get())
             self.shift_parser.update_shift(self.selected_date.day, 'junior_cardiac_surgeon', junior_surgeon_var.get())
+            self.shift_parser.update_shift(self.selected_date.day, 'anesthesiologist_1', anesthesiologist_1_var.get())
+            self.shift_parser.update_shift(self.selected_date.day, 'anesthesiologist_2', anesthesiologist_2_var.get())
+            self.shift_parser.update_shift(self.selected_date.day, 'pediatric_cardiologist', pediatric_cardiologist_var.get())
 
             # Save to cache
             self.shift_parser.save_to_json(self.shift_cache_file)
@@ -1203,16 +1322,39 @@ class HospitalDisplayGUI:
         )
         cancel_btn.pack(side=tk.LEFT, padx=5)
 
-    def schedule_refresh(self):
-        """Schedule the next auto-refresh"""
-        self.root.after(self.auto_refresh_interval, self.auto_refresh)
+    def schedule_daily_refresh(self):
+        """Schedule daily refresh at 08:00"""
+        from datetime import datetime, timedelta
+
+        now = datetime.now()
+
+        # Calculate next 08:00
+        target_time = now.replace(hour=8, minute=0, second=0, microsecond=0)
+
+        # If 08:00 has already passed today, schedule for tomorrow
+        if now >= target_time:
+            target_time += timedelta(days=1)
+
+        # Calculate milliseconds until target time
+        time_until_refresh = (target_time - now).total_seconds() * 1000
+
+        print(f"\n[ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ] Επόμενη αυτόματη ανανέωση: {target_time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+        # Schedule the refresh
+        self.root.after(int(time_until_refresh), self.auto_refresh)
 
     def auto_refresh(self):
-        """Auto-refresh data and schedule next refresh"""
-        print("\n[ΑΥΤΟΜΑΤΗ ΑΝΑΝΕΩΣΗ] Ενεργοποιήθηκε αυτόματη ανανέωση δεδομένων")
+        """Auto-refresh data at 08:00 and schedule next refresh"""
+        print("\n[ΑΥΤΟΜΑΤΗ ΑΝΑΝΕΩΣΗ] Ενεργοποιήθηκε καθημερινή ανανέωση δεδομένων στις 08:00")
+
+        # Reset to today's date when auto-refreshing
+        self.selected_date = date.today()
+
         self.refresh_data()
-        self.update_shift_display()  # Also refresh shift display
-        self.schedule_refresh()
+        self.update_shift_display()
+
+        # Schedule next daily refresh
+        self.schedule_daily_refresh()
 
 
 def main():
@@ -1226,7 +1368,7 @@ def main():
     print("\nΧειριστήρια:")
     print("  • F11: Εναλλαγή πλήρους οθόνης")
     print("  • ESC: Έξοδος από πλήρη οθόνη")
-    print("  • Αυτόματη ανανέωση: Κάθε 30 λεπτά")
+    print("  • Αυτόματη ανανέωση: Καθημερινά στις 08:00")
     print("\n" + "="*60 + "\n")
 
     root.mainloop()

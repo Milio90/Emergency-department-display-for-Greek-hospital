@@ -31,6 +31,13 @@ class DailyShift:
     senior_cardiac_surgeon: Optional[str] = None  # Ανώτερος Καρδιοχειρουργός
     junior_cardiac_surgeon: Optional[str] = None  # Νεώτερος Καρδιοχειρουργός
 
+    # Anesthesiologists
+    anesthesiologist_1: Optional[str] = None  # Αναισθησιολόγος 1
+    anesthesiologist_2: Optional[str] = None  # Αναισθησιολόγος 2
+
+    # Pediatric Cardiology
+    pediatric_cardiologist: Optional[str] = None  # Παιδοκαρδιολόγος
+
     def __str__(self):
         """String representation for display"""
         attending_str = ", ".join(self.attendings) if self.attendings else "Κανένας"
@@ -46,6 +53,12 @@ class DailyShift:
             parts.append(f"Καρδιοχειρουργός 1: {self.senior_cardiac_surgeon}")
         if self.junior_cardiac_surgeon:
             parts.append(f"Καρδιοχειρουργός 2: {self.junior_cardiac_surgeon}")
+        if self.anesthesiologist_1:
+            parts.append(f"Αναισθησιολόγος 1: {self.anesthesiologist_1}")
+        if self.anesthesiologist_2:
+            parts.append(f"Αναισθησιολόγος 2: {self.anesthesiologist_2}")
+        if self.pediatric_cardiologist:
+            parts.append(f"Παιδοκαρδιολόγος: {self.pediatric_cardiologist}")
 
         return " | ".join(parts)
 
@@ -171,8 +184,8 @@ class ShiftParser:
     def _parse_resident_table(self, table):
         """Parse residents table (second table)"""
         # Table structure:
-        # Row 0: Headers [Day, Month, Weekday, ΜΕΓΑΛΕΣ, ΜΙΚΡΕΣ, ΤΕΠ]
-        # Row 1+: [Day, Month, Weekday, MajorName, MinorName, TEPName]
+        # Row 0: Headers [Day, Month, Weekday, ΜΕΓΑΛΕΣ, ΜΙΚΡΕΣ, ΤΕΠ, ΑΝΑΙΣΘ 1, ΑΝΑΙΣΘ 2, ΠΑΙΔΟΚΑΡΔ]
+        # Row 1+: [Day, Month, Weekday, MajorName, MinorName, TEPName, Anest1, Anest2, PedCardio]
 
         for i, row in enumerate(table.rows):
             if i == 0:  # Skip header row
@@ -195,11 +208,19 @@ class ShiftParser:
             minor_shift = cells[4] if cells[4] else None
             tep_cardiologist = cells[5] if cells[5] else None
 
+            # Optional columns for anesthesiologists and pediatric cardiology
+            anesthesiologist_1 = cells[6] if len(cells) > 6 and cells[6] else None
+            anesthesiologist_2 = cells[7] if len(cells) > 7 and cells[7] else None
+            pediatric_cardiologist = cells[8] if len(cells) > 8 and cells[8] else None
+
             # Update existing shift or create new one
             if day in self.shifts:
                 self.shifts[day].major_shift = major_shift
                 self.shifts[day].minor_shift = minor_shift
                 self.shifts[day].tep_cardiologist = tep_cardiologist
+                self.shifts[day].anesthesiologist_1 = anesthesiologist_1
+                self.shifts[day].anesthesiologist_2 = anesthesiologist_2
+                self.shifts[day].pediatric_cardiologist = pediatric_cardiologist
             else:
                 self.shifts[day] = DailyShift(
                     day=day,
@@ -208,7 +229,10 @@ class ShiftParser:
                     attendings=[],
                     major_shift=major_shift,
                     minor_shift=minor_shift,
-                    tep_cardiologist=tep_cardiologist
+                    tep_cardiologist=tep_cardiologist,
+                    anesthesiologist_1=anesthesiologist_1,
+                    anesthesiologist_2=anesthesiologist_2,
+                    pediatric_cardiologist=pediatric_cardiologist
                 )
 
     def get_shift_for_day(self, day: int) -> Optional[DailyShift]:
@@ -276,7 +300,8 @@ class ShiftParser:
         """
         Update a specific field in a shift
         field can be: 'attendings', 'major_shift', 'minor_shift', 'tep_cardiologist',
-                      'senior_cardiac_surgeon', 'junior_cardiac_surgeon'
+                      'senior_cardiac_surgeon', 'junior_cardiac_surgeon',
+                      'anesthesiologist_1', 'anesthesiologist_2', 'pediatric_cardiologist'
         """
         if day not in self.shifts:
             print(f"✗ Δεν βρέθηκε εφημερία για την ημέρα {day}")
@@ -288,7 +313,8 @@ class ShiftParser:
             # Parse comma-separated names
             shift.attendings = [name.strip() for name in value.split(',') if name.strip()]
         elif field in ['major_shift', 'minor_shift', 'tep_cardiologist',
-                       'senior_cardiac_surgeon', 'junior_cardiac_surgeon']:
+                       'senior_cardiac_surgeon', 'junior_cardiac_surgeon',
+                       'anesthesiologist_1', 'anesthesiologist_2', 'pediatric_cardiologist']:
             setattr(shift, field, value.strip() if value.strip() else None)
         else:
             print(f"✗ Άγνωστο πεδίο: {field}")

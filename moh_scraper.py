@@ -164,12 +164,25 @@ class MOHHospitalScraper:
                         # Find header row to identify columns
                         header_row = None
                         for i, row in enumerate(table[:5]):  # Check first 5 rows instead of 3
-                            if row and 'Κλινικές' in str(row):
+                            if row and 'ΚΛΙΝΙΚ' in str(row).upper():
                                 header_row = i
                                 break
 
                         if header_row is None:
                             continue
+
+                        # Extract time slot labels from header row
+                        header = table[header_row]
+                        time_slots = []
+                        for col_idx in range(1, len(header)):
+                            cell = header[col_idx]
+                            if cell and cell.strip() and 'ΠΑΡΑΤΗΡΗΣ' not in cell and 'Κλινικ' not in cell.upper():
+                                # Clean up the time slot label
+                                time_label = cell.strip()
+                                # Normalize formatting (remove extra spaces around dash)
+                                time_label = re.sub(r'\s*–\s*', '-', time_label)
+                                time_label = re.sub(r'\s*-\s*', '-', time_label)
+                                time_slots.append((time_label, col_idx))
 
                         # Parse each row after header
                         for row in table[header_row + 1:]:
@@ -185,20 +198,12 @@ class MOHHospitalScraper:
                                 specialty, specialty
                             )
 
-                            # Extract hospitals from different time slots
-                            # Columns: [Specialty, 08:00-14:30, 08:00-16:00, 08:00-23:00, 14:30-08:00, 08:00-08:00]
-                            time_slots = [
-                                ("08:00-14:30", 1),
-                                ("08:00-16:00", 2),
-                                ("08:00-23:00", 3),
-                                ("14:30-08:00 επομένης", 4),
-                                ("08:00-08:00 επομένης", 5),
-                            ]
-
+                            # Extract hospitals from time slot columns
                             for time_label, col_idx in time_slots:
                                 if col_idx < len(row):
                                     cell_text = row[col_idx]
-                                    if cell_text:
+                                    # Skip empty cells and cells with only whitespace
+                                    if cell_text and cell_text.strip():
                                         # Extract hospital names from cell
                                         hospital_names = self._extract_hospital_names(
                                             cell_text
